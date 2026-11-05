@@ -1,4 +1,6 @@
 export type ClassId = 'guardian' | 'psionic' | 'gunner' | 'assassin' | 'titan';
+export type SlotId = 'weapon' | 'armor' | 'helmet' | 'bio';
+export type Quality = 'worn' | 'common' | 'fine' | 'relic';
 
 export interface Stats {
   hp: number;
@@ -53,7 +55,7 @@ export interface ClassDef {
   skills: SkillDef[];
 }
 
-export type ItemKind = 'trash' | 'consumable' | 'chip' | 'material' | 'weapon' | 'armor';
+export type ItemKind = 'trash' | 'consumable' | 'chip' | 'material' | 'equipment';
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic';
 
 export interface ItemDef {
@@ -64,8 +66,9 @@ export interface ItemDef {
   desc: string;
   price: number;
   use?: { hpPct?: number; mpPct?: number };
-  atk?: number;
-  def?: number;
+  slot?: SlotId;
+  stats?: Partial<Stats>;
+  chip?: { bonus: number; safe?: boolean };
 }
 
 export interface LootEntry {
@@ -87,6 +90,7 @@ export interface MobDef {
   gold: [number, number];
   loot: LootEntry[];
   respawnMs: number;
+  sprite: string;
   miniBoss?: boolean;
 }
 
@@ -98,12 +102,16 @@ export interface LayerDef {
   economy: string;
   radiation: number;
   minLevel: number;
+  art?: string;
   mobs: MobDef[];
 }
 
-export interface Equipped {
-  item: string;
+export interface ItemStack {
+  uid: number;
+  id: string;
+  count: number;
   enchant: number;
+  quality: Quality;
 }
 
 export interface Player {
@@ -115,9 +123,9 @@ export interface Player {
   mp: number;
   gold: number;
   layer: number;
-  weapon: Equipped;
-  armor: Equipped;
-  inventory: Record<string, number>;
+  equipment: Record<SlotId, ItemStack | null>;
+  inventory: ItemStack[];
+  nextItemUid: number;
   kills: number;
   deaths: number;
   bossRespawns: Record<string, number>;
@@ -132,10 +140,30 @@ export interface MobInstance {
   nextAttackAt: number;
 }
 
+export interface MinePlayer {
+  name: string;
+  classId: ClassId;
+  level: number;
+  dps: number;
+  dmg: number;
+}
+
+export interface MineState {
+  layerId: number;
+  boss: MobInstance;
+  bots: MinePlayer[];
+  playerDmg: number;
+  endsAt: number;
+  nextBotTickAt: number;
+  closesAt: number | null;
+  result: string | null;
+}
+
 export interface Game {
   player: Player;
   mobs: MobInstance[];
   targetUid: number | null;
+  viewUid: number | null;
   cooldowns: Record<string, number>;
   lastCombatAt: number;
   lastClickAt: number;
@@ -143,4 +171,7 @@ export interface Game {
   layerVersion: number;
   inventoryDirty: boolean;
   nextUid: number;
+  portal: { expiresAt: number } | null;
+  mine: MineState | null;
+  gaze: { until: number; clicks: number[] };
 }

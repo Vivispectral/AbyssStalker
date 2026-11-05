@@ -1,5 +1,7 @@
 import './style.css';
-import { createGame, createPlayer, loadPlayer, savePlayer, tick, wipeSave } from './game';
+import { tick } from './game/combat';
+import { createGame, createPlayer, loadPlayer, savePlayer, wipeSave } from './game/state';
+import { spawnLayer } from './game/travel';
 import { showCharacterCreation } from './ui/create';
 import { mountHud, updateHud } from './ui/hud';
 import { log } from './ui/log';
@@ -19,6 +21,7 @@ async function boot(): Promise<void> {
   }
 
   const g = createGame(player);
+  spawnLayer(g);
   let wiped = false;
   const save = () => {
     if (!wiped) savePlayer(g.player);
@@ -28,15 +31,18 @@ async function boot(): Promise<void> {
     wipeSave();
     location.reload();
   });
+  if (import.meta.env.DEV) Object.assign(window, { __game: g });
 
-  log(isNew ? `${player.name} делает первый шаг в Провал.` : `С возвращением, ${player.name}.`, 'level');
-  log('Клик по «Атаковать» — удар. Навыки: 1, 2. Аптечка: Q, ампула: E.', 'system');
+  log(isNew ? `${player.name} разбивает палатку в лагере у Провала.` : `С возвращением, ${player.name}.`, 'level');
+  log('Клик по «Атаковать» или по силуэту — удар. Навыки: 1, 2. Аптечка: Q, ампула: E. ПКМ по предмету — на верстак.', 'system');
 
-  setInterval(() => {
+  const frame = () => {
     const now = Date.now();
     tick(g, now);
     updateHud(g, now);
-  }, TICK_MS);
+  };
+  frame();
+  setInterval(frame, TICK_MS);
 
   setInterval(save, SAVE_EVERY_MS);
   addEventListener('beforeunload', save);

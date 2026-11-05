@@ -4,7 +4,7 @@ export type ChatKind = 'say' | 'trade' | 'good' | 'fail' | 'system' | 'self';
 
 const MAX_LINES = 150;
 
-const NAMES = [
+export const FAKE_NAMES = [
   'Кровопуск', 'xX_Strazh_Xx', 'ТёмныйЖнец', 'NanoBaron', 'Ржавый_Пёс', 'Шептунья', 'Kardinal_Orlov',
   'Liara', 'СтарыйКурьер', 'Molot', 'Громила', 'Тень_Провала', 'ZeroCool', 'Бабка_с_Антирадом',
   'Литейщик_Петрович', 'Vex', 'ЯдоваяМоль', 'Sn1per', 'Psi_Kitty', 'Дробитель3000',
@@ -12,7 +12,8 @@ const NAMES = [
 
 const GEAR = [
   'Мономолекулярный клинок', 'Тяжёлые пластины Стража', 'Прицельный комплекс М-3', 'Нейро-имплант «Шёпот»',
-  'Двуручный дробитель', 'Плащ-хамелеон', 'Изолирующая ряса', 'Ударный щит-молот', 'Разгрузка стрелка',
+  'Двуручный дробитель', 'Ржавый клинок', 'Энергетический резак', 'Стальной экзо-жилет', 'Импульсный пси-посох',
+  'Монолитная броня', 'Крио-визор', 'Коса богомола',
 ];
 
 const CHATTER = [
@@ -59,15 +60,14 @@ export function systemChat(text: string, kind: ChatKind = 'system'): void {
 }
 
 function fakeMessage(): void {
-  const name = pick(NAMES);
+  const name = pick(FAKE_NAMES);
   const gear = pick(GEAR);
   const roll = Math.random();
   if (roll < 0.22) {
     const lvl = randInt(4, 12);
     systemChat(`${name} успешно заточил «${gear}» до +${lvl}!`, 'good');
   } else if (roll < 0.42) {
-    const lvl = randInt(4, 11);
-    systemChat(`${name} пытался заточить «${gear}» +${lvl - 1} → +${lvl}. Предмет дезинтегрирован. Осталась Кучка мусора.`, 'fail');
+    systemChat(`${name} сломал «${gear} +${randInt(3, 10)}» при заточке!`, 'fail');
   } else if (roll < 0.55) {
     push(name, `ПРОДАМ «${gear}» +${randInt(3, 9)}, ${randInt(2, 90)}к, пм`, 'trade');
   } else if (roll < 0.62) {
@@ -97,7 +97,7 @@ export function mountChat(target: HTMLElement, form: HTMLFormElement, input: HTM
     if (!text) return;
     push(getName(), text, 'self');
     input.value = '';
-    if (chance(0.35)) setTimeout(() => push(pick(NAMES), pick(REPLIES), 'say'), randInt(1200, 4000));
+    if (chance(0.35)) setTimeout(() => push(pick(FAKE_NAMES), pick(REPLIES), 'say'), randInt(1200, 4000));
   });
   scheduleFake();
 }
